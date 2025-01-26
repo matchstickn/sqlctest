@@ -18,9 +18,9 @@ RETURNING id, name, style, power
 `
 
 type CreateTrickParams struct {
-	Name  sql.NullString
-	Style sql.NullInt32
-	Power sql.NullBool
+	Name  sql.NullString `json:"name"`
+	Style sql.NullInt32  `json:"style"`
+	Power sql.NullBool   `json:"power"`
 }
 
 func (q *Queries) CreateTrick(ctx context.Context, arg CreateTrickParams) (Trick, error) {
@@ -103,10 +103,10 @@ RETURNING id, name, style, power
 `
 
 type UpdateTrickParams struct {
-	ID    int32
-	Name  sql.NullString
-	Style sql.NullInt32
-	Power sql.NullBool
+	ID    int32          `json:"id"`
+	Name  sql.NullString `json:"name"`
+	Style sql.NullInt32  `json:"style"`
+	Power sql.NullBool   `json:"power"`
 }
 
 func (q *Queries) UpdateTrick(ctx context.Context, arg UpdateTrickParams) error {

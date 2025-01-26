@@ -9,8 +9,8 @@ import (
 )
 
 type Trick struct {
-	ID    int32
-	Name  sql.NullString
-	Style sql.NullInt32
-	Power sql.NullBool
+	ID    int32          `json:"id"`
+	Name  sql.NullString `json:"name"`
+	Style sql.NullInt32  `json:"style"`
+	Power sql.NullBool   `json:"power"`
 }
