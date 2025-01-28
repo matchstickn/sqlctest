@@ -22,19 +22,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pq, err := sql.Open("postgres", "user=postgres password="+os.Getenv("password")+" dbname=FlintCRUD sslmode=disable")
+	// connstr := "postgres", "user=postgres password="+os.Getenv("password")+" dbname=FlintCRUD sslmode=disable"
+	connstr := os.Getenv("postgresql_url")
+
+	pq, err := sql.Open("postgres", connstr)
 	if err != nil {
 		log.Fatalf("failed opening connection to posgresql: %v", err)
 	}
 	defer pq.Close()
 
 	query := db.New(pq)
-
-	tricks, err := query.GetTrick(ctx, 2)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(tricks)
 
 	for {
 		method := strings.ToLower(getAnswer("get, list, update, delete, or insert"))
