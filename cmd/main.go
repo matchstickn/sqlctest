@@ -23,7 +23,7 @@ func main() {
 	}
 
 	// connstr := "postgres", "user=postgres password="+os.Getenv("password")+" dbname=FlintCRUD sslmode=disable"
-	connstr := os.Getenv("postgresql_url")
+	connstr := os.Getenv("NEONTECH_URL")
 
 	pq, err := sql.Open("postgres", connstr)
 	if err != nil {
