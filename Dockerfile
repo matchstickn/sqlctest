@@ -139,6 +139,7 @@ RUN go mod download
 
 # Copy source files with directory structure
 COPY ./cmd ./cmd
+COPY ./internal/server ./internal/server
 COPY ./assets/db ./assets/db
 
 # Explicitly build for AMD64 regardless of host architecture

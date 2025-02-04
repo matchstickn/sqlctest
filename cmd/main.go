@@ -3,23 +3,22 @@ package main
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/matchstickn/sqlctest/assets/db"
+	"github.com/matchstickn/sqlctest/internal/server"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 func main() {
 	ctx := context.Background()
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("must inject env: ", err)
+	if err := godotenv.Load(); err != nil {
+		log.Println("detected env injection, if not:", err)
 	}
 
 	// connstr := "postgres", "user=postgres password="+os.Getenv("password")+" dbname=FlintCRUD sslmode=disable"
@@ -33,6 +32,17 @@ func main() {
 
 	query := db.New(pq)
 
+	app := fiber.New(fiber.Config{})
+
+	app.Use(logger.New())
+	app.Get("/get", server.GetTrickHandler(ctx, query))
+	app.Get("/list", server.ListTrickhandler(ctx, query))
+	app.Post("/create", server.CreateTrickHandler(ctx, query))
+
+	log.Fatal(app.Listen(":4000"))
+}
+
+/*
 	for {
 		method := strings.ToLower(getAnswer("get, list, update, delete, or insert"))
 		if method == "get" {
@@ -111,3 +121,5 @@ func getID() int32 {
 	out, _ := strconv.Atoi(input)
 	return int32(out)
 }
+
+*/
