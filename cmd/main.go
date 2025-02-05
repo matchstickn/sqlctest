@@ -38,6 +38,7 @@ func main() {
 	app.Get("/get", server.GetTrickHandler(ctx, query))
 	app.Get("/list", server.ListTrickhandler(ctx, query))
 	app.Post("/create", server.CreateTrickHandler(ctx, query))
+	app.Delete("/delete", server.DeleteTrickHandler(ctx, query))
 
 	log.Fatal(app.Listen(":4000"))
 }

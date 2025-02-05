@@ -2,9 +2,14 @@ package server
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/matchstickn/sqlctest/assets/db"
 )
+
+type trickId struct {
+	Id int32 `json:"id"`
+}
 
 func BodyToCreateTrick(trick db.Trick) (db.CreateTrickParams, error) {
 	name, style, power := sql.NullString{}, sql.NullInt32{}, sql.NullBool{}
@@ -25,5 +30,6 @@ func BodyToCreateTrick(trick db.Trick) (db.CreateTrickParams, error) {
 		Style: style,
 		Power: power,
 	}
+	fmt.Println(trickParams)
 	return trickParams, nil
 }
