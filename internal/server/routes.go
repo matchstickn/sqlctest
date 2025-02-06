@@ -65,8 +65,8 @@ func CreateTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 		}
 
 		fmt.Println(trick)
-
-		return c.JSON(trick)
+		c.JSON(trick)
+		return c.SendStatus(fiber.StatusAccepted)
 	}
 }
 
@@ -78,6 +78,33 @@ func DeleteTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 		}
 
 		if err := query.DeleteTrick(ctx, id.Id); err != nil {
+			return err
+		}
+		return c.SendStatus(fiber.StatusAccepted)
+	}
+}
+
+func UpdateTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var newTrick db.Trick
+		if err := c.BodyParser(&newTrick); err != nil {
+			return err
+		}
+		fmt.Println(newTrick)
+
+		newTrickParams, err := BodyToCreateTrick(newTrick)
+		if err != nil {
+			return err
+		}
+
+		updateTrickParams := db.UpdateTrickParams{
+			ID:    newTrick.ID,
+			Name:  newTrickParams.Name,
+			Style: newTrickParams.Style,
+			Power: newTrickParams.Power,
+		}
+
+		if err := query.UpdateTrick(ctx, updateTrickParams); err != nil {
 			return err
 		}
 		return c.SendStatus(fiber.StatusAccepted)
