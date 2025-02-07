@@ -10,6 +10,7 @@ import (
 	"github.com/matchstickn/sqlctest/internal/server"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/internal/schema"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -29,6 +30,9 @@ func main() {
 		log.Fatalf("failed opening connection to posgresql: %v", err)
 	}
 	defer pq.Close()
+
+	decoder := schema.NewDecoder()
+	server.SchemaRegisterConverterNulls(decoder)
 
 	query := db.New(pq)
 
