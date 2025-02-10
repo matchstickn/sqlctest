@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createTrick = `-- name: CreateTrick :one
@@ -18,13 +17,13 @@ RETURNING id, name, style, power
 `
 
 type CreateTrickParams struct {
-	Name  sql.NullString `json:"name"`
-	Style sql.NullInt32  `json:"style"`
-	Power sql.NullBool   `json:"power"`
+	Name  *string `db:"name" json:"name"`
+	Style *int32  `db:"style" json:"style"`
+	Power *bool   `db:"power" json:"power"`
 }
 
 func (q *Queries) CreateTrick(ctx context.Context, arg CreateTrickParams) (Trick, error) {
-	row := q.db.QueryRowContext(ctx, createTrick, arg.Name, arg.Style, arg.Power)
+	row := q.db.QueryRow(ctx, createTrick, arg.Name, arg.Style, arg.Power)
 	var i Trick
 	err := row.Scan(
 		&i.ID,
@@ -41,7 +40,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteTrick(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteTrick, id)
+	_, err := q.db.Exec(ctx, deleteTrick, id)
 	return err
 }
 
@@ -51,7 +50,7 @@ ORDER BY name
 `
 
 func (q *Queries) GetAllTricks(ctx context.Context) ([]Trick, error) {
-	rows, err := q.db.QueryContext(ctx, getAllTricks)
+	rows, err := q.db.Query(ctx, getAllTricks)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +68,6 @@ func (q *Queries) GetAllTricks(ctx context.Context) ([]Trick, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -84,7 +80,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetTrick(ctx context.Context, id int32) (Trick, error) {
-	row := q.db.QueryRowContext(ctx, getTrick, id)
+	row := q.db.QueryRow(ctx, getTrick, id)
 	var i Trick
 	err := row.Scan(
 		&i.ID,
@@ -95,7 +91,7 @@ func (q *Queries) GetTrick(ctx context.Context, id int32) (Trick, error) {
 	return i, err
 }
 
-const updateTrick = `-- name: UpdateTrick :exec
+const updateTrick = `-- name: UpdateTrick :one
 UPDATE tricks
 SET name = $2, style = $3, power = $4
 WHERE id = $1
@@ -103,18 +99,25 @@ RETURNING id, name, style, power
 `
 
 type UpdateTrickParams struct {
-	ID    int32          `json:"id"`
-	Name  sql.NullString `json:"name"`
-	Style sql.NullInt32  `json:"style"`
-	Power sql.NullBool   `json:"power"`
+	ID    int32   `db:"id" json:"id"`
+	Name  *string `db:"name" json:"name"`
+	Style *int32  `db:"style" json:"style"`
+	Power *bool   `db:"power" json:"power"`
 }
 
-func (q *Queries) UpdateTrick(ctx context.Context, arg UpdateTrickParams) error {
-	_, err := q.db.ExecContext(ctx, updateTrick,
+func (q *Queries) UpdateTrick(ctx context.Context, arg UpdateTrickParams) (Trick, error) {
+	row := q.db.QueryRow(ctx, updateTrick,
 		arg.ID,
 		arg.Name,
 		arg.Style,
 		arg.Power,
 	)
-	return err
+	var i Trick
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Style,
+		&i.Power,
+	)
+	return i, err
 }

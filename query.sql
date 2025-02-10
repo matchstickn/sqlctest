@@ -12,7 +12,7 @@ INSERT INTO tricks
 VALUES ($1, $2, $3) 
 RETURNING *;
 
--- name: UpdateTrick :exec
+-- name: UpdateTrick :one
 UPDATE tricks
 SET name = $2, style = $3, power = $4
 WHERE id = $1

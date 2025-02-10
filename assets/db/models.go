@@ -4,13 +4,9 @@
 
 package db
 
-import (
-	"database/sql"
-)
-
 type Trick struct {
-	ID    int32          `json:"id"`
-	Name  sql.NullString `json:"name"`
-	Style sql.NullInt32  `json:"style"`
-	Power sql.NullBool   `json:"power"`
+	ID    int32   `db:"id" json:"id"`
+	Name  *string `db:"name" json:"name"`
+	Style *int32  `db:"style" json:"style"`
+	Power *bool   `db:"power" json:"power"`
 }
