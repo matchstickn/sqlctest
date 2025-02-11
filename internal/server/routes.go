@@ -49,12 +49,12 @@ func CreateTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 		}
 		fmt.Println(newTrick)
 
-		newTrickParams, err := BodyToCreateTrick(newTrick)
-		if err != nil {
-			return err
-		}
+		trick, err := query.CreateTrick(ctx, db.CreateTrickParams{
+			Name:  newTrick.Name,
+			Style: newTrick.Style,
+			Power: newTrick.Power,
+		})
 
-		trick, err := query.CreateTrick(ctx, newTrickParams)
 		if err != nil {
 			return err
 		}
@@ -87,19 +87,8 @@ func UpdateTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 		}
 		fmt.Println(newTrick)
 
-		newTrickParams, err := BodyToCreateTrick(newTrick)
-		if err != nil {
-			return err
-		}
+		trick, err := query.UpdateTrick(ctx, db.UpdateTrickParams(newTrick))
 
-		updateTrickParams := db.UpdateTrickParams{
-			ID:    newTrick.ID,
-			Name:  newTrickParams.Name,
-			Style: newTrickParams.Style,
-			Power: newTrickParams.Power,
-		}
-
-		trick, err := query.UpdateTrick(ctx, updateTrickParams)
 		if err != nil {
 			return err
 		}
