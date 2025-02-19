@@ -6,26 +6,27 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5"
 	"github.com/matchstickn/sqlctest/assets/db"
-	"github.com/matchstickn/sqlctest/internal/server"
+	"github.com/matchstickn/sqlctest/internal/routes"
 )
 
-func SetUpFiber(ctx context.Context, query *db.Queries, app *fiber.App) {
+func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 	app.Use(logger.New())
-	app.Get("/get", server.GetTrickHandler(ctx, query))
-	app.Get("/list", server.ListTrickhandler(ctx, query))
-	app.Post("/create", server.CreateTrickHandler(ctx, query))
-	app.Delete("/delete", server.DeleteTrickHandler(ctx, query))
-	app.Put("/update", server.UpdateTrickHandler(ctx, query))
+	app.Use(recover.New())
+	app.Get("/get", routes.GetTrickHandler(ctx, query))
+	app.Get("/list", routes.ListTrickhandler(ctx, query))
+	app.Post("/create", routes.CreateTrickHandler(ctx, query))
+	app.Delete("/delete", routes.DeleteTrickHandler(ctx, query))
+	app.Put("/update", routes.UpdateTrickHandler(ctx, query))
 }
 
-func SetUpDB(ctx context.Context, connstr string) *db.Queries {
+func SetUpDB(ctx context.Context, connstr string) (*db.Queries, *pgx.Conn) {
 	pq, err := pgx.Connect(ctx, connstr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer pq.Close(ctx)
 
-	return db.New(pq)
+	return db.New(pq), pq
 }

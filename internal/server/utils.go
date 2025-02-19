@@ -1,5 +1,5 @@
 package server
 
-type trickId struct {
+type TrickId struct {
 	Id int32 `json:"id"`
 }

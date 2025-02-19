@@ -18,11 +18,12 @@ func main() {
 	}
 	connstr := os.Getenv("NEONTECH_URL")
 
-	query := cmd.SetUpDB(ctx, connstr)
+	query, pq := cmd.SetUpDB(ctx, connstr)
+	defer pq.Close(ctx)
 
 	app := fiber.New(fiber.Config{})
 
-	cmd.SetUpFiber(ctx, query, app)
+	cmd.SetUpRoutes(ctx, query, app)
 
 	log.Fatal(app.Listen(":4000"))
 }
