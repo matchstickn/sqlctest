@@ -1,3 +1,5 @@
+// goth_fiber minimally edited
+
 package fiber_goth
 
 import (

@@ -13,13 +13,20 @@ import (
 )
 
 func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
+	// Middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
+	// Tricks
 	app.Get("/get", routes.GetTrickHandler(ctx, query))
 	app.Get("/list", routes.ListTrickhandler(ctx, query))
 	app.Post("/create", routes.CreateTrickHandler(ctx, query))
 	app.Delete("/delete", routes.DeleteTrickHandler(ctx, query))
 	app.Put("/update", routes.UpdateTrickHandler(ctx, query))
+	// Auth
+	if err := routes.SetUpAuthenticationHandlers(app); err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func SetUpDB(ctx context.Context, connstr string) (*db.Queries, *pgx.Conn) {

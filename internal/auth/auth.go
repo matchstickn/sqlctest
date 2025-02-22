@@ -1,10 +1,13 @@
 package auth
 
 import (
+	"fmt"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/joho/godotenv"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/google"
@@ -16,31 +19,24 @@ type ProviderIndex struct {
 	ProvidersMap map[string]string
 }
 
-func GothGetProviderIndex() (*ProviderIndex, error) {
+func GothSetUpRoutes(app *fiber.App) error {
+	fiber_goth.SessionStore = session.New(session.Config{
+		Expiration: time.Hour * 12,
+	})
+
 	if err := godotenv.Load(); err != nil {
-		return nil, err
+		return err
 	}
 
 	goth.UseProviders(
-		google.New(os.Getenv("GOOGLE_KEY"), os.Getenv("GOOGLE_SECRET"), "http:localhost:3000/auth/google/callback"),
+		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "https://127.0.0.1:3000/google/callback"),
 	)
 
-	services := map[string]string{
-		"google": "Google",
-	}
+	app.Get("/login/:provider", GothAuthenticate)
+	app.Get("/auth/callback/:provider", GothAuthenitcationCallback)
+	app.Get("/logout", GothLogout)
 
-	var keys []string
-	for key := range services {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-
-	providerIndex := &ProviderIndex{
-		Providers:    keys,
-		ProvidersMap: services,
-	}
-
-	return providerIndex, nil
+	return nil
 }
 
 func GothAuthenticate(c *fiber.Ctx) error {
@@ -61,10 +57,32 @@ func GothAuthenitcationCallback(c *fiber.Ctx) error {
 	if err != nil {
 		return c.SendString(err.Error())
 	}
+
+	fmt.Println(user)
+
 	return c.JSON(user)
 }
 
 func GothLogout(c *fiber.Ctx) error {
 	fiber_goth.Logout(c)
-	return c.Redirect("/", fiber.StatusFound)
+	return c.Redirect("/list", fiber.StatusFound)
+}
+
+func GothGetProviderIndex() (*ProviderIndex, error) {
+	services := map[string]string{
+		"google": "Google",
+	}
+
+	var keys []string
+	for key := range services {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	providerIndex := &ProviderIndex{
+		Providers:    keys,
+		ProvidersMap: services,
+	}
+
+	return providerIndex, nil
 }
