@@ -5,9 +5,9 @@ CREATE TABLE public.tricks (
     power boolean,
     CONSTRAINT tricks_pkey PRIMARY KEY (id),
     CONSTRAINT tricks_style_check CHECK (style <= 10)
-)
+);
 
-CREATE TABLE IF NOT EXISTS spinners.spinners
+CREATE TABLE IF NOT EXISTS spinners
 (
     UserID BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     Name VARCHAR(100) NOT NULL,
@@ -24,5 +24,5 @@ CREATE TABLE IF NOT EXISTS spinners.spinners
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS spinners.spinners
+ALTER TABLE IF EXISTS spinners
     OWNER to postgres;

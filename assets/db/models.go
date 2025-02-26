@@ -4,8 +4,24 @@
 
 package db
 
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+type Spinner struct {
+	Userid            int64            `db:"userid" json:"userid"`
+	Name              string           `db:"name" json:"name"`
+	Email             string           `db:"email" json:"email"`
+	Provider          string           `db:"provider" json:"provider"`
+	Tricks            *string          `db:"tricks" json:"tricks"`
+	Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
+	Accesstoken       string           `db:"accesstoken" json:"accesstoken"`
+	Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret"`
+	Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken"`
+}
+
 type Trick struct {
-	ID    int32   `db:"id" json:"id"`
+	ID    int64   `db:"id" json:"id"`
 	Name  *string `db:"name" json:"name"`
 	Style *int32  `db:"style" json:"style"`
 	Power *bool   `db:"power" json:"power"`
