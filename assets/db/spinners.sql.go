@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const getUser = `-- name: GetUser :one
+const getSpinner = `-- name: GetSpinner :one
 SELECT userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken FROM spinners
 WHERE spinners.UserID = $1 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, userid int64) (Spinner, error) {
-	row := q.db.QueryRow(ctx, getUser, userid)
+func (q *Queries) GetSpinner(ctx context.Context, userid int64) (Spinner, error) {
+	row := q.db.QueryRow(ctx, getSpinner, userid)
 	var i Spinner
 	err := row.Scan(
 		&i.Userid,
@@ -31,15 +31,16 @@ func (q *Queries) GetUser(ctx context.Context, userid int64) (Spinner, error) {
 	return i, err
 }
 
-const getUserTricks = `-- name: GetUserTricks :many
+const getSpinnerTricks = `-- name: GetSpinnerTricks :many
 SELECT spinners.Tricks 
 FROM spinners
 INNER JOIN tricks 
 ON spinners.Tricks = tricks.name
+WHERE spinners.UserID = $1
 `
 
-func (q *Queries) GetUserTricks(ctx context.Context) ([]*string, error) {
-	rows, err := q.db.Query(ctx, getUserTricks)
+func (q *Queries) GetSpinnerTricks(ctx context.Context, userid int64) ([]*string, error) {
+	rows, err := q.db.Query(ctx, getSpinnerTricks, userid)
 	if err != nil {
 		return nil, err
 	}

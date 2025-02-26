@@ -17,11 +17,19 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 	app.Use(logger.New())
 	app.Use(recover.New())
 	// Tricks
-	app.Get("/get", routes.GetTrickHandler(ctx, query))
-	app.Get("/list", routes.ListTrickhandler(ctx, query))
-	app.Post("/create", routes.CreateTrickHandler(ctx, query))
-	app.Delete("/delete", routes.DeleteTrickHandler(ctx, query))
-	app.Put("/update", routes.UpdateTrickHandler(ctx, query))
+	app.Route("/trick", func(api fiber.Router) {
+		api.Get("/get", routes.GetTrickHandler(ctx, query))
+		api.Get("/list", routes.ListTrickhandler(ctx, query))
+		api.Post("/create", routes.CreateTrickHandler(ctx, query))
+		api.Delete("/delete", routes.DeleteTrickHandler(ctx, query))
+		api.Put("/update", routes.UpdateTrickHandler(ctx, query))
+	}, "trick")
+
+	// Spinners
+	app.Route("/spinner", func(api fiber.Router) {
+		api.Get("/get", routes.GetUserHandler(ctx, query))
+		api.Get("/tricks", routes.GetUserTricksHandler(ctx, query))
+	}, "spinner")
 	// Auth
 	if err := routes.SetUpAuthenticationHandlers(app); err != nil {
 		log.Fatal(err)

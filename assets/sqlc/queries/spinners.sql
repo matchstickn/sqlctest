@@ -1,9 +1,10 @@
--- name: GetUser :one
+-- name: GetSpinner :one
 SELECT * FROM spinners
 WHERE spinners.UserID = $1 LIMIT 1;
 
--- name: GetUserTricks :many
+-- name: GetSpinnerTricks :many
 SELECT spinners.Tricks 
 FROM spinners
 INNER JOIN tricks 
-ON spinners.Tricks = tricks.name;
+ON spinners.Tricks = tricks.name
+WHERE spinners.UserID = $1; 

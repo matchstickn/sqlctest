@@ -22,7 +22,7 @@ func GetTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 		trick, err := query.GetTrick(ctx, id.Id)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("user not found")
+				return fmt.Errorf("trick not found")
 			}
 			return server.PublicWrapError(err, "get")
 		}

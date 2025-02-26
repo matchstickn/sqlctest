@@ -38,8 +38,6 @@ func main() {
 
 	cmd.SetUpRoutes(ctx, query, app)
 
-	log.Println(query.GetUserTricks(ctx))
-
 	if https == "true" {
 
 		cert, err := tls.X509KeyPair(crt, key)
