@@ -29,7 +29,7 @@ func GothSetUpRoutes(app *fiber.App) error {
 	}
 
 	goth.UseProviders(
-		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "https://127.0.0.1:3000/google/callback"),
+		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "https://127.0.0.1:4000/list"),
 	)
 
 	app.Get("/login/:provider", GothAuthenticate)

@@ -144,7 +144,7 @@ COPY ./assets/db ./assets/db
 
 # Explicitly build for AMD64 regardless of host architecture
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -o /app/docker-sqlc ./cmd
+    go build -o /app/docker-sqlc ./cmd/app
 
 # Verify assets/db copy
 RUN ls -l ./assets/db
