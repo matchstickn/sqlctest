@@ -27,8 +27,12 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 
 	// Spinners
 	app.Route("/spinner", func(api fiber.Router) {
-		api.Get("/get", routes.GetUserHandler(ctx, query))
-		api.Get("/tricks", routes.GetUserTricksHandler(ctx, query))
+		api.Get("/get", routes.GetSpinnerHandler(ctx, query))
+		api.Get("/tricks", routes.GetSpinnerTricksHandler(ctx, query))
+		api.Get("/list", routes.ListSpinnerHandler(ctx, query))
+		api.Post("/create", routes.CreateSpinnerHandler(ctx, query))
+		api.Delete("/delete", routes.DeleteSpinnerHandler(ctx, query))
+		api.Put("/update", routes.UpdateSpinnerHandler(ctx, query))
 	}, "spinner")
 	// Auth
 	if err := routes.SetUpAuthenticationHandlers(app); err != nil {
@@ -44,4 +48,15 @@ func SetUpDB(ctx context.Context, connstr string) (*db.Queries, *pgx.Conn) {
 	}
 
 	return db.New(pq), pq
+}
+
+func SetUpRecover() {
+	defer recovery()
+	panic("lskdjf")
+}
+
+func recovery() {
+	if r := recover(); r != nil {
+		log.Println("Sucessfully recovered: ", r)
+	}
 }

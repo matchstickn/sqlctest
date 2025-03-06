@@ -11,22 +11,21 @@ WHERE spinners.UserID = $1;
 
 -- name: ListSpinners :many
 SELECT *
-FROM spinners
-RETURN *;
+FROM spinners;
 
---name: CreateSpinners :one
+-- name: CreateSpinner :one
 INSERT INTO spinners
 (Name, Email, Provider, Tricks, ExpiresAt, AccessToken, AccessTokenSecret, RefreshToken)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURN *;
+RETURNING *;
 
--- name: UpdateSpinners :one
-UPDATE spinnners
+-- name: UpdateSpinner :one
+UPDATE spinners
 SET Name = $2, Email = $3, Provider = $4, Tricks = $5, ExpiresAt = $6, AccessToken = $7, AccessTokenSecret = $8, RefreshToken = $9
-WHERE id = $1
-RETURN *;
+WHERE UserID = $1
+RETURNING *;
 
--- name: DeleteSpinners :one
-DELETE FROM spinnners
-WHERE id = $1
-RETURN *;
+-- name: DeleteSpinner :one
+DELETE FROM spinners
+WHERE UserID = $1
+RETURNING *;

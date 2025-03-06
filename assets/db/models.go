@@ -13,7 +13,7 @@ type Spinner struct {
 	Name              string           `db:"name" json:"name"`
 	Email             string           `db:"email" json:"email"`
 	Provider          string           `db:"provider" json:"provider"`
-	Tricks            *string          `db:"tricks" json:"tricks"`
+	Tricks            []int64          `db:"tricks" json:"tricks"`
 	Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
 	Accesstoken       string           `db:"accesstoken" json:"accesstoken"`
 	Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret"`

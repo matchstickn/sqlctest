@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS spinners (
     Name VARCHAR(100) NOT NULL,
     Email VARCHAR(254) UNIQUE NOT NULL,
     Provider VARCHAR(32) NOT NULL,
-    Tricks BIGINT,
+    Tricks BIGINT[],
     ExpiresAt TIMESTAMP,
     AccessToken VARCHAR(255) NOT NULL,
     AccessTokenSecret VARCHAR(255),

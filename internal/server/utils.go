@@ -4,6 +4,6 @@ type TrickId struct {
 	Id int64 `json:"id"`
 }
 
-type UserId struct {
+type SpinnerId struct {
 	Id int64 `json:"id"`
 }

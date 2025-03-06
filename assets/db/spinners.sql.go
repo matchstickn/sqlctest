@@ -7,7 +7,76 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createSpinner = `-- name: CreateSpinner :one
+INSERT INTO spinners
+(Name, Email, Provider, Tricks, ExpiresAt, AccessToken, AccessTokenSecret, RefreshToken)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+`
+
+type CreateSpinnerParams struct {
+	Name              string           `db:"name" json:"name"`
+	Email             string           `db:"email" json:"email"`
+	Provider          string           `db:"provider" json:"provider"`
+	Tricks            []int64          `db:"tricks" json:"tricks"`
+	Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
+	Accesstoken       string           `db:"accesstoken" json:"accesstoken"`
+	Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret"`
+	Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken"`
+}
+
+func (q *Queries) CreateSpinner(ctx context.Context, arg CreateSpinnerParams) (Spinner, error) {
+	row := q.db.QueryRow(ctx, createSpinner,
+		arg.Name,
+		arg.Email,
+		arg.Provider,
+		arg.Tricks,
+		arg.Expiresat,
+		arg.Accesstoken,
+		arg.Accesstokensecret,
+		arg.Refreshtoken,
+	)
+	var i Spinner
+	err := row.Scan(
+		&i.Userid,
+		&i.Name,
+		&i.Email,
+		&i.Provider,
+		&i.Tricks,
+		&i.Expiresat,
+		&i.Accesstoken,
+		&i.Accesstokensecret,
+		&i.Refreshtoken,
+	)
+	return i, err
+}
+
+const deleteSpinner = `-- name: DeleteSpinner :one
+DELETE FROM spinners
+WHERE UserID = $1
+RETURNING userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+`
+
+func (q *Queries) DeleteSpinner(ctx context.Context, userid int64) (Spinner, error) {
+	row := q.db.QueryRow(ctx, deleteSpinner, userid)
+	var i Spinner
+	err := row.Scan(
+		&i.Userid,
+		&i.Name,
+		&i.Email,
+		&i.Provider,
+		&i.Tricks,
+		&i.Expiresat,
+		&i.Accesstoken,
+		&i.Accesstokensecret,
+		&i.Refreshtoken,
+	)
+	return i, err
+}
 
 const getSpinner = `-- name: GetSpinner :one
 SELECT userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken FROM spinners
@@ -39,15 +108,15 @@ ON spinners.Tricks = tricks.name
 WHERE spinners.UserID = $1
 `
 
-func (q *Queries) GetSpinnerTricks(ctx context.Context, userid int64) ([]*string, error) {
+func (q *Queries) GetSpinnerTricks(ctx context.Context, userid int64) ([][]int64, error) {
 	rows, err := q.db.Query(ctx, getSpinnerTricks, userid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*string
+	var items [][]int64
 	for rows.Next() {
-		var tricks *string
+		var tricks []int64
 		if err := rows.Scan(&tricks); err != nil {
 			return nil, err
 		}
@@ -57,4 +126,85 @@ func (q *Queries) GetSpinnerTricks(ctx context.Context, userid int64) ([]*string
 		return nil, err
 	}
 	return items, nil
+}
+
+const listSpinners = `-- name: ListSpinners :many
+SELECT userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+FROM spinners
+`
+
+func (q *Queries) ListSpinners(ctx context.Context) ([]Spinner, error) {
+	rows, err := q.db.Query(ctx, listSpinners)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Spinner
+	for rows.Next() {
+		var i Spinner
+		if err := rows.Scan(
+			&i.Userid,
+			&i.Name,
+			&i.Email,
+			&i.Provider,
+			&i.Tricks,
+			&i.Expiresat,
+			&i.Accesstoken,
+			&i.Accesstokensecret,
+			&i.Refreshtoken,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateSpinner = `-- name: UpdateSpinner :one
+UPDATE spinners
+SET Name = $2, Email = $3, Provider = $4, Tricks = $5, ExpiresAt = $6, AccessToken = $7, AccessTokenSecret = $8, RefreshToken = $9
+WHERE UserID = $1
+RETURNING userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+`
+
+type UpdateSpinnerParams struct {
+	Userid            int64            `db:"userid" json:"userid"`
+	Name              string           `db:"name" json:"name"`
+	Email             string           `db:"email" json:"email"`
+	Provider          string           `db:"provider" json:"provider"`
+	Tricks            []int64          `db:"tricks" json:"tricks"`
+	Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
+	Accesstoken       string           `db:"accesstoken" json:"accesstoken"`
+	Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret"`
+	Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken"`
+}
+
+func (q *Queries) UpdateSpinner(ctx context.Context, arg UpdateSpinnerParams) (Spinner, error) {
+	row := q.db.QueryRow(ctx, updateSpinner,
+		arg.Userid,
+		arg.Name,
+		arg.Email,
+		arg.Provider,
+		arg.Tricks,
+		arg.Expiresat,
+		arg.Accesstoken,
+		arg.Accesstokensecret,
+		arg.Refreshtoken,
+	)
+	var i Spinner
+	err := row.Scan(
+		&i.Userid,
+		&i.Name,
+		&i.Email,
+		&i.Provider,
+		&i.Tricks,
+		&i.Expiresat,
+		&i.Accesstoken,
+		&i.Accesstokensecret,
+		&i.Refreshtoken,
+	)
+	return i, err
 }

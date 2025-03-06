@@ -12,9 +12,9 @@ import (
 	"github.com/matchstickn/sqlctest/internal/server"
 )
 
-func GetUserHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func GetSpinnerHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var id server.UserId
+		var id server.SpinnerId
 		if err := c.BodyParser(&id); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
 		}
@@ -30,76 +30,96 @@ func GetUserHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	}
 }
 
-func GetUserTricksHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func ListSpinnerHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var id server.UserId
+		spinner, err := query.ListSpinners(ctx)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return fmt.Errorf("spinner not found")
+			}
+			return server.PublicWrapError(err, "list")
+		}
+		return c.JSON(spinner)
+	}
+}
+
+func GetSpinnerTricksHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var id server.SpinnerId
 		if err := c.BodyParser(&id); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
 		}
 
-		tricks, err := query.GetSpinnerTricks(ctx, id.Id)
+		Spinners, err := query.GetSpinnerTricks(ctx, id.Id)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("tricks not found")
+				return fmt.Errorf("Spinners not found")
 			}
 			return server.PublicWrapError(err, "get")
 		}
-		return c.JSON(tricks)
+		return c.JSON(Spinners)
 	}
 }
 
 func CreateSpinnerHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var newTrick db.Trick
-		if err := c.BodyParser(&newTrick); err != nil {
+		var newSpinner db.Spinner
+		if err := c.BodyParser(&newSpinner); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
 		}
 
-		trick, err := query.CreateTrick(ctx, db.CreateTrickParams{
-			Name:  newTrick.Name,
-			Style: newTrick.Style,
-			Power: newTrick.Power,
+		spinner, err := query.CreateSpinner(ctx, db.CreateSpinnerParams{
+			Name:              newSpinner.Name,
+			Email:             newSpinner.Email,
+			Provider:          newSpinner.Provider,
+			Tricks:            newSpinner.Tricks,
+			Expiresat:         newSpinner.Expiresat,
+			Accesstoken:       newSpinner.Accesstoken,
+			Accesstokensecret: newSpinner.Accesstokensecret,
+			Refreshtoken:      newSpinner.Refreshtoken,
 		})
 		if err != nil {
 			return server.PublicWrapError(err, "create")
 		}
 
-		c.JSON(trick)
+		c.JSON(spinner)
 		return c.SendStatus(fiber.StatusAccepted)
 	}
 }
 
 func DeleteSpinnerHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var id server.TrickId
+		var id server.SpinnerId
 		if err := c.BodyParser(&id); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
 		}
 
-		if err := query.DeleteTrick(ctx, id.Id); err != nil {
+		spinner, err := query.DeleteSpinner(ctx, id.Id)
+		if err != nil {
 			return server.PublicWrapError(err, "delete")
 		}
 
 		stringID := strconv.Itoa(int(id.Id))
 
-		c.WriteString("Successfully Deleted trick with id: " + stringID)
+		c.JSON(spinner)
+		c.WriteString("Successfully Deleted Spinner with id: " + stringID)
 		return c.SendStatus(fiber.StatusAccepted)
 	}
 }
 
-func UpdateSpinnnerHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func UpdateSpinnerHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var newTrick db.Trick
-		if err := c.BodyParser(&newTrick); err != nil {
+		var newSpinner db.Spinner
+		if err := c.BodyParser(&newSpinner); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
 		}
 
-		trick, err := query.UpdateTrick(ctx, db.UpdateTrickParams(newTrick))
+		spinner, err := query.UpdateSpinner(ctx, db.UpdateSpinnerParams(newSpinner))
 		if err != nil {
 			return server.PublicWrapError(err, "update")
 		}
 
-		c.JSON(trick)
+		c.JSON(spinner)
 		return c.SendStatus(fiber.StatusAccepted)
 	}
 }
