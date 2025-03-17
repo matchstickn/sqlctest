@@ -50,13 +50,16 @@ func SetUpDB(ctx context.Context, connstr string) (*db.Queries, *pgx.Conn) {
 	return db.New(pq), pq
 }
 
-func SetUpRecover() {
-	defer recovery()
-	panic("lskdjf")
-}
+func RecoveryInputFunc(fn func(*bool)) {
+	Recovered := new(bool)
+	retries := 0
 
-func recovery() {
-	if r := recover(); r != nil {
-		log.Println("Sucessfully recovered: ", r)
+	for !*Recovered {
+		fn(Recovered)
+		if retries == 3 {
+			break
+		}
+		retries++
 	}
+	log.Println("unrecoverable")
 }

@@ -29,3 +29,7 @@ RETURNING *;
 DELETE FROM spinners
 WHERE UserID = $1
 RETURNING *;
+
+-- name: RetriveSpinner :one
+SELECT * FROM spinners
+WHERE Accesstoken = $1 LIMIT 1;

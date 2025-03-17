@@ -163,6 +163,28 @@ func (q *Queries) ListSpinners(ctx context.Context) ([]Spinner, error) {
 	return items, nil
 }
 
+const retriveSpinner = `-- name: RetriveSpinner :one
+SELECT userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken FROM spinners
+WHERE Accesstoken = $1 LIMIT 1
+`
+
+func (q *Queries) RetriveSpinner(ctx context.Context, accesstoken string) (Spinner, error) {
+	row := q.db.QueryRow(ctx, retriveSpinner, accesstoken)
+	var i Spinner
+	err := row.Scan(
+		&i.Userid,
+		&i.Name,
+		&i.Email,
+		&i.Provider,
+		&i.Tricks,
+		&i.Expiresat,
+		&i.Accesstoken,
+		&i.Accesstokensecret,
+		&i.Refreshtoken,
+	)
+	return i, err
+}
+
 const updateSpinner = `-- name: UpdateSpinner :one
 UPDATE spinners
 SET Name = $2, Email = $3, Provider = $4, Tricks = $5, ExpiresAt = $6, AccessToken = $7, AccessTokenSecret = $8, RefreshToken = $9

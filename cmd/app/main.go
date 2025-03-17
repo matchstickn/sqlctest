@@ -38,6 +38,24 @@ func main() {
 
 	cmd.SetUpRoutes(ctx, query, app)
 
+	// Recovery
+	defer cmd.RecoveryInputFunc(func(Recovered *bool) {
+		var (
+			t bool = true
+			f bool = false
+		)
+		if r := recover(); r != nil {
+			log.Println("Recovered. Error:\n", r)
+			// Restart Services
+			_, pq := cmd.SetUpDB(ctx, connstr)
+			defer pq.Close(ctx)
+
+			cmd.SetUpRoutes(ctx, query, app)
+			Recovered = &t
+		}
+		Recovered = &f
+	})
+
 	if https == "true" {
 
 		cert, err := tls.X509KeyPair(crt, key)
