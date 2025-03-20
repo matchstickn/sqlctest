@@ -35,9 +35,6 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 		api.Put("/update", routes.UpdateSpinnerHandler(ctx, query))
 	}, "spinner")
 	// Auth
-	if err := routes.SetUpAuthenticationHandlers(app); err != nil {
-		log.Fatal(err)
-	}
 
 }
 
