@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5"
 	"github.com/matchstickn/sqlctest/assets/db"
+	"github.com/matchstickn/sqlctest/internal/auth"
 	"github.com/matchstickn/sqlctest/internal/routes"
 )
 
@@ -35,6 +36,10 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 		api.Put("/update", routes.UpdateSpinnerHandler(ctx, query))
 	}, "spinner")
 	// Auth
+	app.Route("/auth", func(au fiber.Router) {
+		au.Use(auth.EnsureValidToken())
+		au.Get("/validate", routes.Test)
+	})
 
 }
 

@@ -1,43 +1,28 @@
 package auth
 
 import (
-	"os"
-	"time"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt"
+	"context"
+	"strings"
 )
 
-func Login(c *fiber.Ctx) error {
-	user := c.FormValue("user")
-
-	// Create the Claims
-	claims := jwt.MapClaims{
-		"name":  user,
-		"admin": true,
-		"exp":   time.Now().Add(time.Hour * 72).Unix(),
-	}
-
-	// Create token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Generate encoded token and send it as response.
-	secret, ok := os.LookupEnv("AUTH0_CLIENT_SECRET")
-	if !ok {
-		return c.SendStatus(fiber.StatusInternalServerError)
-	}
-
-	t, err := token.SignedString([]byte(secret))
-	if err != nil {
-		return c.SendStatus(fiber.StatusInternalServerError)
-	}
-
-	return c.JSON(fiber.Map{"token": t})
+// CustomClaims contains custom data from the token.
+type CustomClaims struct {
+	Scope string `json:"scope"`
 }
 
-func Restricted(c *fiber.Ctx) error {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	return c.SendString("Welcome " + name)
+// Does nothing, but needs to compile
+func (c CustomClaims) Validate(ctx context.Context) error {
+	return nil
+}
+
+// HasScope checks whether the claims have a specific scope.
+func (c CustomClaims) HasScope(expectedScope string) bool {
+	result := strings.Split(c.Scope, " ")
+	for i := range result {
+		if result[i] == expectedScope {
+			return true
+		}
+	}
+
+	return false
 }

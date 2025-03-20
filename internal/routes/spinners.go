@@ -53,7 +53,7 @@ func GetSpinnerTricksHandler(ctx context.Context, query *db.Queries) fiber.Handl
 		Spinners, err := query.GetSpinnerTricks(ctx, id.Id)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("Spinners not found")
+				return fmt.Errorf("spinners not found")
 			}
 			return server.PublicWrapError(err, "get")
 		}
