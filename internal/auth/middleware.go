@@ -30,7 +30,7 @@ func ensureValidToken() func(next http.Handler) http.Handler {
 
 	jwtValidator, err := validator.New(
 		provider.KeyFunc,
-		validator.HS256,
+		validator.RS256,
 		issuerURL.String(),
 		[]string{os.Getenv("AUTH0_AUDIENCE")},
 		validator.WithCustomClaims(
