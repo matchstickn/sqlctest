@@ -17,6 +17,14 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 	// Middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
+	// Auth:Open
+	app.Post("/signup", routes.SignUp())
+	app.Post("/authenticate", routes.GetAuthenticatedAccessToken())
+	// Auth:Protected
+	app.Route("/auth", func(au fiber.Router) {
+		au.Use(auth.EnsureValidToken())
+		au.Get("/validate", routes.Test)
+	})
 	// Tricks
 	app.Route("/trick", func(api fiber.Router) {
 		api.Get("/get", routes.GetTrickHandler(ctx, query))
@@ -35,11 +43,6 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 		api.Delete("/delete", routes.DeleteSpinnerHandler(ctx, query))
 		api.Put("/update", routes.UpdateSpinnerHandler(ctx, query))
 	}, "spinner")
-	// Auth
-	app.Route("/auth", func(au fiber.Router) {
-		au.Use(auth.EnsureValidToken())
-		au.Get("/validate", routes.Test)
-	})
 
 }
 
