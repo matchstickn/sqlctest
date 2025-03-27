@@ -18,13 +18,13 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 	app.Use(logger.New())
 	app.Use(recover.New())
 	// Auth:Open
-	app.Post("/signup", routes.SignUp())
-	app.Post("/authenticate", routes.GetAuthenticatedAccessToken())
-	// Auth:Protected
 	app.Route("/auth", func(au fiber.Router) {
-		au.Use(auth.EnsureValidToken())
-		au.Get("/validate", routes.Test)
+		au.Post("/signup", routes.SignUp())
+		au.Post("/authenticate", routes.GetAuthenticatedAccessToken())
 	})
+	// Protected
+	app.Use(auth.EnsureValidToken())
+	app.Get("/validate", routes.Test)
 	// Tricks
 	app.Route("/trick", func(api fiber.Router) {
 		api.Get("/get", routes.GetTrickHandler(ctx, query))
