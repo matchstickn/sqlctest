@@ -1,0 +1,12 @@
+TODO
+
+Finish account logic
+    change password api
+    test account routes
+    authenticate account routes
+    admin account
+
+Add the api validator
+    add validator types to schema and query golang ported data types
+    add validator logic to commands.golang
+    add validaotr to validate.go
