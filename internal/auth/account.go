@@ -3,6 +3,7 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -100,4 +101,43 @@ func (a AccessTokenRequest) GetAccessToken() (string, error) {
 	}
 
 	return AccessTokenResponse.AccessToken, nil
+}
+
+type ChangePasswordRequest struct {
+	ClientId     string `json:"client_id"`
+	Email        string `json:"email"`
+	Connection   string `json:"connection"`
+	Organization string `json:"organization"`
+}
+
+func (p ChangePasswordRequest) ChangePassword() (string, error) {
+	jsonBody, err := json.Marshal(p)
+	if err != nil {
+		return "", err
+	}
+
+	readerBody := bytes.NewReader(jsonBody)
+
+	resp, err := http.Post("https://"+os.Getenv("AUTH0_DOMAIN")+"/dbconnections/change_password", "application/json", readerBody)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	ChangePasswordResponse := struct {
+		Response json.RawMessage
+	}{}
+
+	if err = json.Unmarshal(body, &ChangePasswordResponse); err != nil {
+		return "", err
+	}
+
+	fmt.Println(string(body))
+
+	return string(body), nil
 }

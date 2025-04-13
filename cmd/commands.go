@@ -3,8 +3,12 @@ package cmd
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5"
@@ -17,10 +21,20 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 	// Middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
+	app.Use(cache.New())
+	app.Use(helmet.New())
+	app.Use(limiter.New(limiter.Config{
+		Expiration: time.Minute * 2,
+		Max:        8,
+	}))
 	// Auth:Open
 	app.Route("/auth", func(au fiber.Router) {
 		au.Post("/signup", routes.SignUp())
 		au.Post("/authenticate", routes.GetAuthenticatedAccessToken())
+		au.Get("/redirect", routes.SocialLoginRedirect())
+		au.Post("/pass", routes.ChangePassword())
+		// Use this or webstudio.is system.search
+		au.Get("/callback", routes.SocialLoginCallback())
 	})
 	// Protected
 	app.Use(auth.EnsureValidToken())

@@ -18,7 +18,7 @@ RETURNING id, name, style, power
 
 type CreateTrickParams struct {
 	Name  *string `db:"name" json:"name"`
-	Style *int32  `db:"style" json:"style"`
+	Style *int32  `db:"style" json:"style" validate:"required,min=1,max=10"`
 	Power *bool   `db:"power" json:"power"`
 }
 
