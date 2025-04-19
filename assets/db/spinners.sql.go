@@ -13,26 +13,28 @@ import (
 
 const createSpinner = `-- name: CreateSpinner :one
 INSERT INTO spinners
-(Name, Email, Provider, Tricks, ExpiresAt, AccessToken, AccessTokenSecret, RefreshToken)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+(Name, Email, AdminPerms, Provider, Tricks, ExpiresAt, AccessToken, AccessTokenSecret, RefreshToken)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING userid, name, email, adminperms, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
 `
 
 type CreateSpinnerParams struct {
-	Name              string           `db:"name" json:"name"`
-	Email             string           `db:"email" json:"email"`
-	Provider          string           `db:"provider" json:"provider"`
-	Tricks            []int64          `db:"tricks" json:"tricks"`
-	Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
-	Accesstoken       string           `db:"accesstoken" json:"accesstoken"`
-	Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret"`
-	Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken"`
+    Name              string           `db:"name" json:"name" validate:"required"`
+    Email             string           `db:"email" json:"email" validate:"required"`
+	Adminperms        *bool            `db:"adminperms" json:"adminperms"`
+    Provider          string           `db:"provider" json:"provider" validate:"max=32"`
+    Tricks            []int64          `db:"tricks" json:"tricks"`
+    Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
+    Accesstoken       string           `db:"accesstoken" json:"accesstoken" validate:"max=255"`
+    Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret" validate:"max=255"`
+    Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken" validate:"max=255"`
 }
 
 func (q *Queries) CreateSpinner(ctx context.Context, arg CreateSpinnerParams) (Spinner, error) {
 	row := q.db.QueryRow(ctx, createSpinner,
 		arg.Name,
 		arg.Email,
+		arg.Adminperms,
 		arg.Provider,
 		arg.Tricks,
 		arg.Expiresat,
@@ -45,6 +47,7 @@ func (q *Queries) CreateSpinner(ctx context.Context, arg CreateSpinnerParams) (S
 		&i.Userid,
 		&i.Name,
 		&i.Email,
+		&i.Adminperms,
 		&i.Provider,
 		&i.Tricks,
 		&i.Expiresat,
@@ -58,7 +61,7 @@ func (q *Queries) CreateSpinner(ctx context.Context, arg CreateSpinnerParams) (S
 const deleteSpinner = `-- name: DeleteSpinner :one
 DELETE FROM spinners
 WHERE UserID = $1
-RETURNING userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+RETURNING userid, name, email, adminperms, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
 `
 
 func (q *Queries) DeleteSpinner(ctx context.Context, userid int64) (Spinner, error) {
@@ -68,6 +71,7 @@ func (q *Queries) DeleteSpinner(ctx context.Context, userid int64) (Spinner, err
 		&i.Userid,
 		&i.Name,
 		&i.Email,
+		&i.Adminperms,
 		&i.Provider,
 		&i.Tricks,
 		&i.Expiresat,
@@ -79,7 +83,7 @@ func (q *Queries) DeleteSpinner(ctx context.Context, userid int64) (Spinner, err
 }
 
 const getSpinner = `-- name: GetSpinner :one
-SELECT userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken FROM spinners
+SELECT userid, name, email, adminperms, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken FROM spinners
 WHERE spinners.UserID = $1 LIMIT 1
 `
 
@@ -90,6 +94,7 @@ func (q *Queries) GetSpinner(ctx context.Context, userid int64) (Spinner, error)
 		&i.Userid,
 		&i.Name,
 		&i.Email,
+		&i.Adminperms,
 		&i.Provider,
 		&i.Tricks,
 		&i.Expiresat,
@@ -129,7 +134,7 @@ func (q *Queries) GetSpinnerTricks(ctx context.Context, userid int64) ([][]int64
 }
 
 const listSpinners = `-- name: ListSpinners :many
-SELECT userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+SELECT userid, name, email, adminperms, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
 FROM spinners
 `
 
@@ -146,6 +151,7 @@ func (q *Queries) ListSpinners(ctx context.Context) ([]Spinner, error) {
 			&i.Userid,
 			&i.Name,
 			&i.Email,
+			&i.Adminperms,
 			&i.Provider,
 			&i.Tricks,
 			&i.Expiresat,
@@ -164,17 +170,18 @@ func (q *Queries) ListSpinners(ctx context.Context) ([]Spinner, error) {
 }
 
 const retriveSpinner = `-- name: RetriveSpinner :one
-SELECT userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken FROM spinners
+SELECT userid, name, email, adminperms, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken FROM spinners
 WHERE Accesstoken = $1 LIMIT 1
 `
 
-func (q *Queries) RetriveSpinner(ctx context.Context, accesstoken string) (Spinner, error) {
+func (q *Queries) RetriveSpinner(ctx context.Context, accesstoken *string) (Spinner, error) {
 	row := q.db.QueryRow(ctx, retriveSpinner, accesstoken)
 	var i Spinner
 	err := row.Scan(
 		&i.Userid,
 		&i.Name,
 		&i.Email,
+		&i.Adminperms,
 		&i.Provider,
 		&i.Tricks,
 		&i.Expiresat,
@@ -187,21 +194,22 @@ func (q *Queries) RetriveSpinner(ctx context.Context, accesstoken string) (Spinn
 
 const updateSpinner = `-- name: UpdateSpinner :one
 UPDATE spinners
-SET Name = $2, Email = $3, Provider = $4, Tricks = $5, ExpiresAt = $6, AccessToken = $7, AccessTokenSecret = $8, RefreshToken = $9
+SET Name = $2, Email = $3, AdminPerms = $4, Provider = $5, Tricks = $6, ExpiresAt = $7, AccessToken = $8, AccessTokenSecret = $9, RefreshToken = $10
 WHERE UserID = $1
-RETURNING userid, name, email, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
+RETURNING userid, name, email, adminperms, provider, tricks, expiresat, accesstoken, accesstokensecret, refreshtoken
 `
 
 type UpdateSpinnerParams struct {
-	Userid            int64            `db:"userid" json:"userid"`
-	Name              string           `db:"name" json:"name"`
-	Email             string           `db:"email" json:"email"`
-	Provider          string           `db:"provider" json:"provider"`
-	Tricks            []int64          `db:"tricks" json:"tricks"`
-	Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
-	Accesstoken       string           `db:"accesstoken" json:"accesstoken"`
-	Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret"`
-	Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken"`
+    Userid            int64            `db:"userid" json:"userid"  validate:"required"`
+    Name              string           `db:"name" json:"name" validate:"required"`
+    Email             string           `db:"email" json:"email" validate:"required"`
+	Adminperms        *bool            `db:"adminperms" json:"adminperms"`
+    Provider          string           `db:"provider" json:"provider" validate:"max=32"`
+    Tricks            []int64          `db:"tricks" json:"tricks"`
+    Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
+    Accesstoken       string           `db:"accesstoken" json:"accesstoken" validate:"max=255"`
+    Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret" validate:"max=255"`
+    Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken" validate:"max=255"`
 }
 
 func (q *Queries) UpdateSpinner(ctx context.Context, arg UpdateSpinnerParams) (Spinner, error) {
@@ -209,6 +217,7 @@ func (q *Queries) UpdateSpinner(ctx context.Context, arg UpdateSpinnerParams) (S
 		arg.Userid,
 		arg.Name,
 		arg.Email,
+		arg.Adminperms,
 		arg.Provider,
 		arg.Tricks,
 		arg.Expiresat,
@@ -221,6 +230,7 @@ func (q *Queries) UpdateSpinner(ctx context.Context, arg UpdateSpinnerParams) (S
 		&i.Userid,
 		&i.Name,
 		&i.Email,
+		&i.Adminperms,
 		&i.Provider,
 		&i.Tricks,
 		&i.Expiresat,

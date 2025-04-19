@@ -17,9 +17,9 @@ RETURNING id, name, style, power
 `
 
 type CreateTrickParams struct {
-	Name  *string `db:"name" json:"name"`
-	Style *int32  `db:"style" json:"style" validate:"required,min=1,max=10"`
-	Power *bool   `db:"power" json:"power"`
+    Name  *string `db:"name" json:"name" validate:"max=100"`
+    Style *int32  `db:"style" json:"style" validate:"min=1,max=10"`
+    Power *bool   `db:"power" json:"power" validate:""`
 }
 
 func (q *Queries) CreateTrick(ctx context.Context, arg CreateTrickParams) (Trick, error) {
@@ -99,10 +99,10 @@ RETURNING id, name, style, power
 `
 
 type UpdateTrickParams struct {
-	ID    int64   `db:"id" json:"id"`
-	Name  *string `db:"name" json:"name"`
-	Style *int32  `db:"style" json:"style"`
-	Power *bool   `db:"power" json:"power"`
+    ID    int64   `db:"id" json:"id" validate:"unique,required"`
+    Name  *string `db:"name" json:"name" validate:"max=100"`
+    Style *int32  `db:"style" json:"style" validate:"min=1,max=10"`
+    Power *bool   `db:"power" json:"power" validate:""`
 }
 
 func (q *Queries) UpdateTrick(ctx context.Context, arg UpdateTrickParams) (Trick, error) {

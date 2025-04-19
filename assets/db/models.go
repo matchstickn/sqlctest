@@ -9,20 +9,21 @@ import (
 )
 
 type Spinner struct {
-	Userid            int64            `db:"userid" json:"userid"`
-	Name              string           `db:"name" json:"name"`
-	Email             string           `db:"email" json:"email"`
-	Provider          string           `db:"provider" json:"provider"`
-	Tricks            []int64          `db:"tricks" json:"tricks"`
-	Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
-	Accesstoken       string           `db:"accesstoken" json:"accesstoken"`
-	Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret"`
-	Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken"`
+    Userid            int64            `db:"userid" json:"userid" validate:"required"`
+    Name              string           `db:"name" json:"name" validate:"required"`
+    Email             string           `db:"email" json:"email" validate:"required"`
+	Adminperms        *bool            `db:"adminperms" json:"adminperms"`
+    Provider          string           `db:"provider" json:"provider" validate:"max=32"`
+    Tricks            []int64          `db:"tricks" json:"tricks"`
+    Expiresat         pgtype.Timestamp `db:"expiresat" json:"expiresat"`
+    Accesstoken       string           `db:"accesstoken" json:"accesstoken" validate:"max=255"`
+    Accesstokensecret *string          `db:"accesstokensecret" json:"accesstokensecret" validate:"max=255"`
+    Refreshtoken      string           `db:"refreshtoken" json:"refreshtoken" validate:"max=255"`
 }
 
 type Trick struct {
-	ID    int64   `db:"id" json:"id"`
-	Name  *string `db:"name" json:"name"`
-	Style *int32  `db:"style" json:"style"`
-	Power *bool   `db:"power" json:"power"`
+    ID    int64   `db:"id" json:"id" validate:"unique,required"`
+    Name  *string `db:"name" json:"name" validate:"max=100"`
+    Style *int32  `db:"style" json:"style" validate:"min=1,max=10"`
+    Power *bool   `db:"power" json:"power" validate:""`
 }

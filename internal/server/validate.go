@@ -20,12 +20,11 @@ func Validate(v *validator.Validate, data interface{}) []ErrorResponse {
 	errs := v.Struct(data)
 	if errs != nil {
 		for _, err := range errs.(validator.ValidationErrors) {
-			// In this case data object is actually holding the User struct
 			var elem ErrorResponse
 
-			elem.Tag = err.Tag()     // Export struct field name
-			elem.Field = err.Field() // Export struct tag
-			elem.Value = err.Value() // Export field value
+			elem.Tag = err.Tag()
+			elem.Field = err.Field()
+			elem.Value = err.Value()
 			elem.Error = err.Error()
 
 			validationErrors = append(validationErrors, elem)
