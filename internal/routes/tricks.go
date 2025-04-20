@@ -7,16 +7,22 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/matchstickn/sqlctest/assets/db"
 	"github.com/matchstickn/sqlctest/internal/server"
 )
 
-func GetTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func GetTrickHandler(ctx context.Context, query *db.Queries, v *validator.Validate) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var id server.TrickId
 		if err := c.BodyParser(&id); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
+		}
+
+		validateErrResp, validateErrs := server.Validate(v, id)
+		if err := server.HandleValidationErrors(validateErrs, validateErrResp); err != nil {
+			return err
 		}
 
 		trick, err := query.GetTrick(ctx, id.Id)
@@ -30,7 +36,7 @@ func GetTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	}
 }
 
-func ListTrickhandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func ListTrickhandler(ctx context.Context, query *db.Queries, v *validator.Validate) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		allTricks, err := query.GetAllTricks(ctx)
 		if err != nil {
@@ -41,11 +47,16 @@ func ListTrickhandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	}
 }
 
-func CreateTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func CreateTrickHandler(ctx context.Context, query *db.Queries, v *validator.Validate) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var newTrick db.Trick
 		if err := c.BodyParser(&newTrick); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
+		}
+
+		validateErrResp, validateErrs := server.Validate(v, newTrick)
+		if err := server.HandleValidationErrors(validateErrs, validateErrResp); err != nil {
+			return err
 		}
 
 		trick, err := query.CreateTrick(ctx, db.CreateTrickParams{
@@ -62,11 +73,16 @@ func CreateTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	}
 }
 
-func DeleteTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func DeleteTrickHandler(ctx context.Context, query *db.Queries, v *validator.Validate) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var id server.TrickId
 		if err := c.BodyParser(&id); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
+		}
+
+		validateErrResp, validateErrs := server.Validate(v, id)
+		if err := server.HandleValidationErrors(validateErrs, validateErrResp); err != nil {
+			return err
 		}
 
 		if err := query.DeleteTrick(ctx, id.Id); err != nil {
@@ -80,11 +96,16 @@ func DeleteTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
 	}
 }
 
-func UpdateTrickHandler(ctx context.Context, query *db.Queries) fiber.Handler {
+func UpdateTrickHandler(ctx context.Context, query *db.Queries, v *validator.Validate) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var newTrick db.Trick
 		if err := c.BodyParser(&newTrick); err != nil {
 			return server.PublicWrapError(err, "bodyparser")
+		}
+
+		validateErrResp, validateErrs := server.Validate(v, newTrick)
+		if err := server.HandleValidationErrors(validateErrs, validateErrResp); err != nil {
+			return err
 		}
 
 		trick, err := query.UpdateTrick(ctx, db.UpdateTrickParams(newTrick))

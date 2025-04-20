@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -15,9 +16,10 @@ import (
 	"github.com/matchstickn/sqlctest/assets/db"
 	"github.com/matchstickn/sqlctest/internal/auth"
 	"github.com/matchstickn/sqlctest/internal/routes"
+	"github.com/matchstickn/sqlctest/internal/server"
 )
 
-func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
+func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App, v *validator.Validate) {
 	// Middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
@@ -41,11 +43,11 @@ func SetUpRoutes(ctx context.Context, query *db.Queries, app *fiber.App) {
 	app.Get("/validate", routes.Test)
 	// Tricks
 	app.Route("/trick", func(api fiber.Router) {
-		api.Get("/get", routes.GetTrickHandler(ctx, query))
-		api.Get("/list", routes.ListTrickhandler(ctx, query))
-		api.Post("/create", routes.CreateTrickHandler(ctx, query))
-		api.Delete("/delete", routes.DeleteTrickHandler(ctx, query))
-		api.Put("/update", routes.UpdateTrickHandler(ctx, query))
+		api.Get("/get", routes.GetTrickHandler(ctx, query, v))
+		api.Get("/list", routes.ListTrickhandler(ctx, query, v))
+		api.Post("/create", routes.CreateTrickHandler(ctx, query, v))
+		api.Delete("/delete", routes.DeleteTrickHandler(ctx, query, v))
+		api.Put("/update", routes.UpdateTrickHandler(ctx, query, v))
 	}, "trick")
 
 	// Spinners
@@ -67,6 +69,10 @@ func SetUpDB(ctx context.Context, connstr string) (*db.Queries, *pgx.Conn) {
 	}
 
 	return db.New(pq), pq
+}
+
+func SetUpValidator() *validator.Validate {
+	return server.NewValidator()
 }
 
 func RecoveryInputFunc(fn func(*bool)) {

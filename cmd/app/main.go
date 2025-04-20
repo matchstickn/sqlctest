@@ -36,7 +36,9 @@ func main() {
 		AppName: "FlintCRUD",
 	})
 
-	cmd.SetUpRoutes(ctx, query, app)
+	v := cmd.SetUpValidator()
+
+	cmd.SetUpRoutes(ctx, query, app, v)
 
 	// Recovery
 	defer cmd.RecoveryInputFunc(func(Recovered *bool) {
@@ -50,7 +52,7 @@ func main() {
 			_, pq := cmd.SetUpDB(ctx, connstr)
 			defer pq.Close(ctx)
 
-			cmd.SetUpRoutes(ctx, query, app)
+			cmd.SetUpRoutes(ctx, query, app, v)
 			Recovered = &t
 		}
 		Recovered = &f

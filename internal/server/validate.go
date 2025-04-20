@@ -14,12 +14,17 @@ type ErrorResponse struct {
 	Error string
 }
 
-func Validate(v *validator.Validate, data interface{}) []ErrorResponse {
+func NewValidator() *validator.Validate {
+	return validator.New()
+}
+
+func Validate(v *validator.Validate, data interface{}) ([]ErrorResponse, validator.ValidationErrors) {
 	validationErrors := []ErrorResponse{}
 
 	errs := v.Struct(data)
+	validateErrs := errs.(validator.ValidationErrors)
 	if errs != nil {
-		for _, err := range errs.(validator.ValidationErrors) {
+		for _, err := range validateErrs {
 			var elem ErrorResponse
 
 			elem.Tag = err.Tag()
@@ -30,23 +35,28 @@ func Validate(v *validator.Validate, data interface{}) []ErrorResponse {
 			validationErrors = append(validationErrors, elem)
 		}
 	}
-	return validationErrors
+	return validationErrors, validateErrs
 }
 
-func HandleValidationErrors(errs validator.ValidationErrors, errResp []ErrorResponse) error {
+func HandleValidationErrors(errs validator.ValidationErrors, errResps []ErrorResponse) error {
 	errMsgs := make([]string, 0)
 
-	for _, err := range errs {
-		field := err.Field()
-		value := err.Value().(string)
-		tag := err.Tag()
-		errMsgs = append(errMsgs, "["+field+"]: "+value+" | Needs to implement "+tag)
+	for i := 0; i < len(errResps); i++ {
+		respErr := errResps[i].Error
+		if respErr != "" {
+			for _, err := range errs {
+				field := err.Field()
+				value := err.Value().(string)
+				tag := err.Tag()
+				errMsgs = append(errMsgs, "["+field+"]: "+value+" | Needs to implement "+tag)
+			}
+			return &fiber.Error{
+				Code:    fiber.ErrBadRequest.Code,
+				Message: strings.Join(errMsgs, " and "),
+			}
+		}
 	}
-
-	return &fiber.Error{
-		Code:    fiber.ErrBadRequest.Code,
-		Message: strings.Join(errMsgs, " and "),
-	}
+	return nil
 }
 
 func RegisterValidations(v *validator.Validate) error {
